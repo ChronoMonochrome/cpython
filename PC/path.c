@@ -20,6 +20,18 @@
 #include "pathcch.h"
 #include "strsafe.h"
 
+static BOOL is_prefixed_unc(const WCHAR *string)
+{
+    static const WCHAR prefixed_unc[] = {'\\', '\\', '?', '\\', 'U', 'N', 'C', '\\'};
+    return !strncmpiW(string, prefixed_unc, ARRAY_SIZE(prefixed_unc));
+}
+
+static BOOL is_prefixed_disk(const WCHAR *string)
+{
+    static const WCHAR prefix[] = {'\\', '\\', '?', '\\'};
+    return !strncmpW(string, prefix, ARRAY_SIZE(prefix)) && isalphaW(string[4]) && string[5] == ':';
+}
+
 HRESULT WINAPI PathCchAddBackslash(WCHAR *path, SIZE_T size)
 {
     return PathCchAddBackslashEx(path, size, NULL, NULL);
@@ -56,4 +68,28 @@ HRESULT WINAPI PathCchAddBackslashEx(WCHAR *path, SIZE_T size, WCHAR **endptr, S
     if (remaining) *remaining = size - length;
 
     return S_OK;
+}
+
+HRESULT WINAPI PathCchStripPrefix(WCHAR *path, SIZE_T size)
+{
+    TRACE("%s %lu\n", wine_dbgstr_w(path), size);
+
+    if (!path || !size || size > PATHCCH_MAX_CCH) return E_INVALIDARG;
+
+    if (is_prefixed_unc(path))
+    {
+        /* \\?\UNC\a -> \\a */
+        if (size < strlenW(path + 8) + 3) return E_INVALIDARG;
+        strcpyW(path + 2, path + 8);
+        return S_OK;
+    }
+    else if (is_prefixed_disk(path))
+    {
+        /* \\?\C:\ -> C:\ */
+        if (size < strlenW(path + 4) + 1) return E_INVALIDARG;
+        strcpyW(path, path + 4);
+        return S_OK;
+    }
+    else
+        return S_FALSE;
 }
