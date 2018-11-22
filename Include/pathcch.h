@@ -26,4 +26,5 @@
 HRESULT WINAPI PathCchAddBackslash(WCHAR *path, SIZE_T size);
 HRESULT WINAPI PathCchAddBackslashEx(WCHAR *path, SIZE_T size, WCHAR **end, SIZE_T *remaining);
 HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, const WCHAR *path2, DWORD flags);
+HRESULT WINAPI PathCchSkipRoot(const WCHAR *path, const WCHAR **root_end);
 HRESULT WINAPI PathCchStripPrefix(WCHAR *path, SIZE_T size);
