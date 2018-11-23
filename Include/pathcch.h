@@ -22,7 +22,9 @@
 #define PATHCCH_FORCE_DISABLE_LONG_NAME_PROCESS 0x04
 #define PATHCCH_DO_NOT_NORMALIZE_SEGMENTS       0x08
 #define PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH  0x10
+#define PATHCCH_ENSURE_TRAILING_SLASH           0x20
 
+HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **path_out);
 HRESULT WINAPI PathCchAddBackslash(WCHAR *path, SIZE_T size);
 HRESULT WINAPI PathCchAddBackslashEx(WCHAR *path, SIZE_T size, WCHAR **end, SIZE_T *remaining);
 HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, const WCHAR *path2, DWORD flags);
