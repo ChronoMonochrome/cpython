@@ -424,6 +424,38 @@ HRESULT WINAPI PathCchCanonicalizeEx(WCHAR *out, SIZE_T size, const WCHAR *in, D
     return hr;
 }
 
+HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, const WCHAR *path2, DWORD flags)
+{
+    HRESULT hr;
+    WCHAR *buffer;
+    SIZE_T length;
+
+    TRACE("%p %s %s %#x\n", out, wine_dbgstr_w(path1), wine_dbgstr_w(path2), flags);
+
+    if (!out || !size || size > PATHCCH_MAX_CCH) return E_INVALIDARG;
+
+    hr = PathAllocCombine(path1, path2, flags, &buffer);
+    if (FAILED(hr))
+    {
+        out[0] = 0;
+        return hr;
+    }
+
+    length = strlenW(buffer);
+    if (length + 1 > size)
+    {
+        out[0] = 0;
+        LocalFree(buffer);
+        return STRSAFE_E_INSUFFICIENT_BUFFER;
+    }
+    else
+    {
+        memcpy(out, buffer, (length + 1) * sizeof(WCHAR));
+        LocalFree(buffer);
+        return S_OK;
+    }
+}
+
 HRESULT WINAPI PathCchSkipRoot(const WCHAR *path, const WCHAR **root_end)
 {
     static const WCHAR unc_prefix[] = {'\\', '\\', '?'};
