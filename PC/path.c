@@ -135,7 +135,7 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
         return E_INVALIDARG;
     }
 
-    length = strlenW(path_in);
+    length = lstrlenW(path_in);
     if ((length + 1 > MAX_PATH && !(flags & (PATHCCH_ALLOW_LONG_PATHS | PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH)))
         || (length + 1 > PATHCCH_MAX_CCH))
     {
@@ -174,7 +174,7 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
                 dst[2] = '\\';
                 dst[3] = 0;
             }
-            dst = buffer + strlenW(buffer);
+            dst = buffer + lstrlenW(buffer);
             root_end = dst;
         }
         else
@@ -329,9 +329,9 @@ HRESULT WINAPI PathAllocCombine(const WCHAR *path1, const WCHAR *path2, DWORD fl
                         || (is_prefixed_disk(path1) && !path1[6]);
     }
 
-    length2 = path2 ? strlenW(path2) : 0;
+    length2 = path2 ? lstrlenW(path2) : 0;
     /* path1 length + path2 length + possible backslash + NULL */
-    combined_length = strlenW(path1) + length2 + 2;
+    combined_length = lstrlenW(path1) + length2 + 2;
 
     combined_path = HeapAlloc(GetProcessHeap(), 0, combined_length * sizeof(WCHAR));
     if (!combined_path)
@@ -373,7 +373,7 @@ HRESULT WINAPI PathCchAddBackslashEx(WCHAR *path, SIZE_T size, WCHAR **endptr, S
 
     TRACE("%s, %lu, %p, %p\n", debugstr_w(path), size, endptr, remaining);
 
-    length = strlenW(path);
+    length = lstrlenW(path);
     needs_termination = size && length && path[length - 1] != '\\';
 
     if (length >= (needs_termination ? size - 1 : size))
@@ -412,7 +412,7 @@ HRESULT WINAPI PathCchCanonicalizeEx(WCHAR *out, SIZE_T size, const WCHAR *in, D
     hr = PathAllocCanonicalize(in, flags, &buffer);
     if (FAILED(hr)) return hr;
 
-    length = strlenW(buffer);
+    length = lstrlenW(buffer);
     if (size < length + 1)
     {
         /* No root and path > MAX_PATH - 4, return HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE) */
@@ -455,7 +455,7 @@ HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, con
         return hr;
     }
 
-    length = strlenW(buffer);
+    length = lstrlenW(buffer);
     if (length + 1 > size)
     {
         out[0] = 0;
@@ -509,15 +509,15 @@ HRESULT WINAPI PathCchStripPrefix(WCHAR *path, SIZE_T size)
     if (is_prefixed_unc(path))
     {
         /* \\?\UNC\a -> \\a */
-        if (size < strlenW(path + 8) + 3) return E_INVALIDARG;
-        strcpyW(path + 2, path + 8);
+        if (size < lstrlenW(path + 8) + 3) return E_INVALIDARG;
+        lstrcpyW(path + 2, path + 8);
         return S_OK;
     }
     else if (is_prefixed_disk(path))
     {
         /* \\?\C:\ -> C:\ */
-        if (size < strlenW(path + 4) + 1) return E_INVALIDARG;
-        strcpyW(path, path + 4);
+        if (size < lstrlenW(path + 4) + 1) return E_INVALIDARG;
+        lstrcpyW(path, path + 4);
         return S_OK;
     }
     else
