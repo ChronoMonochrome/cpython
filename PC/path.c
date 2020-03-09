@@ -22,25 +22,22 @@
 
 static BOOL is_prefixed_unc(const WCHAR *string)
 {
-    static const WCHAR prefixed_unc[] = {'\\', '\\', '?', '\\', 'U', 'N', 'C', '\\'};
-    return !strncmpiW(string, prefixed_unc, ARRAY_SIZE(prefixed_unc));
+    return !wcsnicmp(string, L"\\\\?\\UNC\\", 8 );
 }
 
 static BOOL is_prefixed_disk(const WCHAR *string)
 {
-    static const WCHAR prefix[] = {'\\', '\\', '?', '\\'};
-    return !strncmpW(string, prefix, ARRAY_SIZE(prefix)) && isalphaW(string[4]) && string[5] == ':';
+    return !wcsncmp(string, L"\\\\?\\", 4) && iswalpha(string[4]) && string[5] == ':';
 }
 
 static BOOL is_prefixed_volume(const WCHAR *string)
 {
-    static const WCHAR prefixed_volume[] = {'\\', '\\', '?', '\\', 'V', 'o', 'l', 'u', 'm', 'e'};
     const WCHAR *guid;
     INT i = 0;
 
-    if (strncmpiW(string, prefixed_volume, ARRAY_SIZE(prefixed_volume))) return FALSE;
+    if (wcsnicmp( string, L"\\\\?\\Volume", 10 )) return FALSE;
 
-    guid = string + ARRAY_SIZE(prefixed_volume);
+    guid = string + 10;
 
     while (i <= 37)
     {
@@ -463,12 +460,10 @@ HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, con
 
 HRESULT WINAPI PathCchSkipRoot(const WCHAR *path, const WCHAR **root_end)
 {
-    static const WCHAR unc_prefix[] = {'\\', '\\', '?'};
-
     TRACE("%s %p\n", debugstr_w(path), root_end);
 
     if (!path || !path[0] || !root_end
-        || (!strncmpiW(unc_prefix, path, ARRAY_SIZE(unc_prefix)) && !is_prefixed_volume(path) && !is_prefixed_unc(path)
+        || (!wcsnicmp(path, L"\\\\?", 3) && !is_prefixed_volume(path) && !is_prefixed_unc(path)
             && !is_prefixed_disk(path)))
         return E_INVALIDARG;
 
