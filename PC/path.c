@@ -20,6 +20,17 @@
 #include "pathcch.h"
 #include "strsafe.h"
 
+static BOOL is_drive_spec( const WCHAR *str )
+{
+    return ((str[0] >= 'A' && str[0] <= 'Z') || (str[0] >= 'a' && str[0] <= 'z')) && str[1] == ':';
+}
+
+static BOOL is_escaped_drive_spec( const WCHAR *str )
+{
+    return ((str[0] >= 'A' && str[0] <= 'Z') || (str[0] >= 'a' && str[0] <= 'z')) &&
+        (str[1] == ':' || str[1] == '|');
+}
+
 static BOOL is_prefixed_unc(const WCHAR *string)
 {
     return !wcsnicmp(string, L"\\\\?\\UNC\\", 8 );
@@ -27,7 +38,7 @@ static BOOL is_prefixed_unc(const WCHAR *string)
 
 static BOOL is_prefixed_disk(const WCHAR *string)
 {
-    return !wcsncmp(string, L"\\\\?\\", 4) && iswalpha(string[4]) && string[5] == ':';
+    return !wcsncmp(string, L"\\\\?\\", 4) && is_drive_spec( string + 4 );
 }
 
 static BOOL is_prefixed_volume(const WCHAR *string)
@@ -56,7 +67,7 @@ static BOOL is_prefixed_volume(const WCHAR *string)
             if (guid[i] != '}') return FALSE;
             break;
         default:
-            if (!isalnumW(guid[i])) return FALSE;
+            if (!isxdigit(guid[i])) return FALSE;
             break;
         }
         i++;
@@ -99,7 +110,7 @@ static const WCHAR *get_root_end(const WCHAR *path)
     else if (path[0] == '\\')
         return path;
     /* X:\ */
-    else if (isalphaW(path[0]) && path[1] == ':')
+    else if (is_drive_spec( path ))
         return path[2] == '\\' ? path + 2 : path + 1;
     else
         return NULL;
@@ -158,7 +169,7 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
         if(PathCchStripPrefix(dst, length + 6) == S_OK)
         {
             /* Fill in \ in X:\ if the \ is missing */
-            if(isalphaW(dst[0]) && dst[1] == ':' && dst[2]!= '\\')
+            if (is_drive_spec( dst ) && dst[2]!= '\\')
             {
                 dst[2] = '\\';
                 dst[3] = 0;
@@ -232,7 +243,7 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
             }
 
             /* If X:\ is not complete, then complete it */
-            if (isalphaW(buffer[0]) && buffer[1] == ':' && buffer[2] != '\\')
+            if (is_drive_spec( buffer ) && buffer[2] != '\\')
             {
                 root_end = buffer + 2;
                 dst = buffer + 3;
@@ -272,9 +283,9 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
     }
 
     /* Extend the path if needed */
-    length = strlenW(buffer);
-    if (((length + 1 > MAX_PATH && isalphaW(buffer[0]) && buffer[1] == ':')
-         || (isalphaW(buffer[0]) && buffer[1] == ':' && flags & PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH))
+    length = lstrlenW(buffer);
+    if (((length + 1 > MAX_PATH && is_drive_spec( buffer ))
+         || (is_drive_spec( buffer ) && flags & PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH))
         && !(flags & PATHCCH_FORCE_ENABLE_LONG_NAME_PROCESS))
     {
         memmove(buffer + 4, buffer, (length + 1) * sizeof(WCHAR));
@@ -310,7 +321,7 @@ HRESULT WINAPI PathAllocCombine(const WCHAR *path1, const WCHAR *path2, DWORD fl
     if (!path1 || !path2) return PathAllocCanonicalize(path1 ? path1 : path2, flags, out);
 
     /* If path2 is fully qualified, use path2 only */
-    if ((isalphaW(path2[0]) && path2[1] == ':') || (path2[0] == '\\' && path2[1] == '\\'))
+    if (is_drive_spec( path2 ) || (path2[0] == '\\' && path2[1] == '\\'))
     {
         path1 = path2;
         path2 = NULL;
@@ -404,7 +415,7 @@ HRESULT WINAPI PathCchCanonicalizeEx(WCHAR *out, SIZE_T size, const WCHAR *in, D
     if (size < length + 1)
     {
         /* No root and path > MAX_PATH - 4, return HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE) */
-        if (length > MAX_PATH - 4 && !(in[0] == '\\' || (isalphaW(in[0]) && in[1] == ':' && in[2] == '\\')))
+        if (length > MAX_PATH - 4 && !(in[0] == '\\' || (is_drive_spec( in ) && in[2] == '\\')))
             hr = HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE);
         else
             hr = STRSAFE_E_INSUFFICIENT_BUFFER;
@@ -415,7 +426,7 @@ HRESULT WINAPI PathCchCanonicalizeEx(WCHAR *out, SIZE_T size, const WCHAR *in, D
         memcpy(out, buffer, (length + 1) * sizeof(WCHAR));
 
         /* Fill a backslash at the end of X: */
-        if (isalphaW(out[0]) && out[1] == ':' && !out[2] && size > 3)
+        if (is_drive_spec( out ) && !out[2] && size > 3)
         {
             out[2] = '\\';
             out[3] = 0;
