@@ -33,7 +33,7 @@ static BOOL is_escaped_drive_spec( const WCHAR *str )
 
 static BOOL is_prefixed_unc(const WCHAR *string)
 {
-    return !wcsnicmp(string, L"\\\\?\\UNC\\", 8 );
+    return !_wcsnicmp(string, L"\\\\?\\UNC\\", 8 );
 }
 
 static BOOL is_prefixed_disk(const WCHAR *string)
@@ -46,7 +46,7 @@ static BOOL is_prefixed_volume(const WCHAR *string)
     const WCHAR *guid;
     INT i = 0;
 
-    if (wcsnicmp( string, L"\\\\?\\Volume", 10 )) return FALSE;
+    if (_wcsnicmp( string, L"\\\\?\\Volume", 10 )) return FALSE;
 
     guid = string + 10;
 
@@ -122,8 +122,6 @@ HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **
     const WCHAR *src;
     const WCHAR *root_end;
     SIZE_T buffer_size, length;
-
-    TRACE("%s %#x %p\n", debugstr_w(path_in), flags, path_out);
 
     if (!path_in || !path_out
         || ((flags & PATHCCH_FORCE_ENABLE_LONG_NAME_PROCESS) && (flags & PATHCCH_FORCE_DISABLE_LONG_NAME_PROCESS))
@@ -310,8 +308,6 @@ HRESULT WINAPI PathAllocCombine(const WCHAR *path1, const WCHAR *path2, DWORD fl
     BOOL add_backslash = FALSE;
     HRESULT hr;
 
-    TRACE("%s %s %#x %p\n", wine_dbgstr_w(path1), wine_dbgstr_w(path2), flags, out);
-
     if ((!path1 && !path2) || !out)
     {
         if (out) *out = NULL;
@@ -371,8 +367,6 @@ HRESULT WINAPI PathCchAddBackslashEx(WCHAR *path, SIZE_T size, WCHAR **endptr, S
     BOOL needs_termination;
     SIZE_T length;
 
-    TRACE("%s, %lu, %p, %p\n", debugstr_w(path), size, endptr, remaining);
-
     length = lstrlenW(path);
     needs_termination = size && length && path[length - 1] != '\\';
 
@@ -404,8 +398,6 @@ HRESULT WINAPI PathCchCanonicalizeEx(WCHAR *out, SIZE_T size, const WCHAR *in, D
     WCHAR *buffer;
     SIZE_T length;
     HRESULT hr;
-
-    TRACE("%p %lu %s %#x\n", out, size, wine_dbgstr_w(in), flags);
 
     if (!size) return E_INVALIDARG;
 
@@ -444,8 +436,6 @@ HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, con
     WCHAR *buffer;
     SIZE_T length;
 
-    TRACE("%p %s %s %#x\n", out, wine_dbgstr_w(path1), wine_dbgstr_w(path2), flags);
-
     if (!out || !size || size > PATHCCH_MAX_CCH) return E_INVALIDARG;
 
     hr = PathAllocCombine(path1, path2, flags, &buffer);
@@ -472,10 +462,8 @@ HRESULT WINAPI PathCchCombineEx(WCHAR *out, SIZE_T size, const WCHAR *path1, con
 
 HRESULT WINAPI PathCchSkipRoot(const WCHAR *path, const WCHAR **root_end)
 {
-    TRACE("%s %p\n", debugstr_w(path), root_end);
-
     if (!path || !path[0] || !root_end
-        || (!wcsnicmp(path, L"\\\\?", 3) && !is_prefixed_volume(path) && !is_prefixed_unc(path)
+        || (!_wcsnicmp(path, L"\\\\?", 3) && !is_prefixed_volume(path) && !is_prefixed_unc(path)
             && !is_prefixed_disk(path)))
         return E_INVALIDARG;
 
@@ -502,21 +490,19 @@ HRESULT WINAPI PathCchSkipRoot(const WCHAR *path, const WCHAR **root_end)
 
 HRESULT WINAPI PathCchStripPrefix(WCHAR *path, SIZE_T size)
 {
-    TRACE("%s %lu\n", wine_dbgstr_w(path), size);
-
     if (!path || !size || size > PATHCCH_MAX_CCH) return E_INVALIDARG;
 
     if (is_prefixed_unc(path))
     {
         /* \\?\UNC\a -> \\a */
-        if (size < lstrlenW(path + 8) + 3) return E_INVALIDARG;
+        if (size < (SIZE_T)lstrlenW(path + 8) + 3) return E_INVALIDARG;
         lstrcpyW(path + 2, path + 8);
         return S_OK;
     }
     else if (is_prefixed_disk(path))
     {
         /* \\?\C:\ -> C:\ */
-        if (size < lstrlenW(path + 4) + 1) return E_INVALIDARG;
+        if (size < (SIZE_T)lstrlenW(path + 4) + 1) return E_INVALIDARG;
         lstrcpyW(path, path + 4);
         return S_OK;
     }
@@ -530,8 +516,6 @@ HRESULT WINAPI PathCchStripToRoot(WCHAR *path, SIZE_T size)
     WCHAR *segment_end;
     BOOL is_unc;
 
-    TRACE("%s %lu\n", wine_dbgstr_w(path), size);
-
     if (!path || !*path || !size || size > PATHCCH_MAX_CCH) return E_INVALIDARG;
 
     /* \\\\?\\UNC\\* and \\\\* have to have at least two extra segments to be striped,
@@ -543,7 +527,7 @@ HRESULT WINAPI PathCchStripToRoot(WCHAR *path, SIZE_T size)
         if (!get_next_segment(root_end, &root_end)) return S_FALSE;
         if (!get_next_segment(root_end, &root_end)) return S_FALSE;
 
-        if (root_end - path >= size) return E_INVALIDARG;
+        if ((SIZE_T)(root_end - path) >= size) return E_INVALIDARG;
 
         segment_end = path + (root_end - path) - 1;
         *segment_end = 0;
@@ -551,7 +535,7 @@ HRESULT WINAPI PathCchStripToRoot(WCHAR *path, SIZE_T size)
     }
     else if (PathCchSkipRoot(path, &root_end) == S_OK)
     {
-        if (root_end - path >= size) return E_INVALIDARG;
+        if ((SIZE_T)(root_end - path) >= size) return E_INVALIDARG;
 
         segment_end = path + (root_end - path);
         if (!*segment_end) return S_FALSE;
