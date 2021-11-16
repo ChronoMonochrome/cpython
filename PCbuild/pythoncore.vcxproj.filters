@@ -144,6 +144,9 @@
     <ClInclude Include="..\Include\patchlevel.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\pathcch.h">
+      <Filter>Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\Include\py_curses.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -196,6 +199,9 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\sliceobject.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\strsafe.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\structmember.h">
@@ -975,6 +981,9 @@
       <Filter>PC</Filter>
     </ClCompile>
     <ClCompile Include="..\PC\msvcrtmodule.c">
+      <Filter>PC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PC\path.c">
       <Filter>PC</Filter>
     </ClCompile>
     <ClCompile Include="..\Python\_warnings.c">

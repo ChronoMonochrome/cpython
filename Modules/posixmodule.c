@@ -15,7 +15,7 @@
 // whereas pycore_condvar.h defines the WIN32_LEAN_AND_MEAN macro.
 #ifdef MS_WINDOWS
 #  include <windows.h>
-#  include <pathcch.h>
+#  include "pathcch.h"
 #endif
 
 #ifdef __VXWORKS__

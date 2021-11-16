@@ -91,7 +91,7 @@
 #endif
 
 #include <windows.h>
-#include <pathcch.h>
+#include "pathcch.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

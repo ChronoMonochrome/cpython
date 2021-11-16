@@ -8,7 +8,7 @@
 #ifdef MS_WINDOWS
 #  include <malloc.h>
 #  include <windows.h>
-#  include <pathcch.h>            // PathCchCombineEx
+#  include "pathcch.h"
 extern int winerror_to_errno(int);
 #endif
 

@@ -92,12 +92,13 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>version.lib;ws2_32.lib;pathcch.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Programs\_freeze_module.c" />
     <ClCompile Include="..\PC\config_minimal.c" />
+    <ClCompile Include="..\PC\path.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Modules\atexitmodule.c" />

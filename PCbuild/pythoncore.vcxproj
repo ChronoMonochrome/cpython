@@ -106,7 +106,7 @@
       <PreprocessorDefinitions Condition="$(IncludeExternals)">_Py_HAVE_ZLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>version.lib;ws2_32.lib;pathcch.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -239,6 +239,7 @@
     <ClInclude Include="..\Include\osdefs.h" />
     <ClInclude Include="..\Include\osmodule.h" />
     <ClInclude Include="..\Include\patchlevel.h" />
+    <ClInclude Include="..\Include\pathcch.h" />
     <ClInclude Include="..\Include\py_curses.h" />
     <ClInclude Include="..\Include\pycapsule.h" />
     <ClInclude Include="..\Include\pyerrors.h" />
@@ -258,6 +259,7 @@
     <ClInclude Include="..\Include\rangeobject.h" />
     <ClInclude Include="..\Include\setobject.h" />
     <ClInclude Include="..\Include\sliceobject.h" />
+    <ClInclude Include="..\Include\strsafe.h" />
     <ClInclude Include="..\Include\structmember.h" />
     <ClInclude Include="..\Include\structseq.h" />
     <ClInclude Include="..\Include\symtable.h" />
@@ -441,6 +443,7 @@
     <ClCompile Include="..\PC\config.c" />
     <ClCompile Include="..\PC\getpathp.c" />
     <ClCompile Include="..\PC\msvcrtmodule.c" />
+    <ClCompile Include="..\PC\path.c" />
     <ClCompile Include="..\Python\pyhash.c" />
     <ClCompile Include="..\Python\_warnings.c" />
     <ClCompile Include="..\Python\asdl.c" />
