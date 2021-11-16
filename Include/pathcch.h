@@ -24,6 +24,8 @@
 #define PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH  0x10
 #define PATHCCH_ENSURE_TRAILING_SLASH           0x20
 
+#define PATHCCH_MAX_CCH 0x8000
+
 HRESULT WINAPI PathAllocCanonicalize(const WCHAR *path_in, DWORD flags, WCHAR **path_out);
 HRESULT WINAPI PathAllocCombine(const WCHAR *path1, const WCHAR *path2, DWORD flags, WCHAR **out);
 HRESULT WINAPI PathCchAddBackslash(WCHAR *path, SIZE_T size);
